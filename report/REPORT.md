@@ -1,7 +1,7 @@
 # Báo Cáo Lab 7: Embedding & Vector Store
 
-**Họ tên:** Trương Quang Lộc  
-**Nhóm:** 
+**Họ tên:** Trương Quang Lộc
+**Nhóm:** 29
 **Ngày:** 10/04/2026
 
 ---
@@ -11,33 +11,29 @@
 ### Cosine Similarity (Ex 1.1)
 
 **High cosine similarity nghĩa là gì?**
-> High cosine similarity nghĩa là hai vector embedding đang hướng gần giống nhau trong không gian vector. Về mặt ý nghĩa, điều đó thường cho thấy hai đoạn văn bản nói về các khái niệm liên quan hoặc diễn đạt gần giống nhau.
+> High cosine similarity nghĩa là hai vector embedding có hướng gần giống nhau trong không gian vector. Điều đó thường cho thấy hai đoạn văn bản có nội dung hoặc ngữ nghĩa liên quan chặt chẽ.
 
 **Ví dụ HIGH similarity:**
-- Sentence A: `Python is easy to learn for beginners.`
-- Sentence B: `Python is beginner-friendly and has readable syntax.`
-- Tại sao tương đồng: Cả hai câu đều nói về cùng một ý chính là Python dễ tiếp cận với người mới học.
+- Sentence A: `Tesla does not pay cash dividends to shareholders.`
+- Sentence B: `Tesla has never declared dividends on its common stock.`
+- Tại sao tương đồng: Cả hai câu đều truyền đạt cùng một ý về chính sách không chia cổ tức của Tesla.
 
 **Ví dụ LOW similarity:**
-- Sentence A: `The support team escalates urgent billing issues.`
-- Sentence B: `I cooked pasta with tomato sauce for dinner.`
-- Tại sao khác: Hai câu thuộc hai chủ đề hoàn toàn khác nhau nên ngữ nghĩa không liên quan.
+- Sentence A: `Gigafactory Texas is located in Austin.`
+- Sentence B: `I made coffee before going to class.`
+- Tại sao khác: Hai câu thuộc hai chủ đề hoàn toàn khác nhau, không có liên hệ ngữ nghĩa trực tiếp.
 
 **Tại sao cosine similarity được ưu tiên hơn Euclidean distance cho text embeddings?**
-> Cosine similarity so sánh hướng của vector thay vì độ lớn tuyệt đối, nên phù hợp hơn với text embeddings nơi ý nghĩa thường nằm ở hướng biểu diễn. Điều này giúp phép đo ổn định hơn khi các vector có độ dài khác nhau.
+> Cosine similarity đo độ giống nhau theo hướng của vector thay vì độ lớn tuyệt đối, nên phù hợp hơn với text embeddings nơi ý nghĩa thường được mã hóa ở hướng biểu diễn. Điều này giúp so sánh ổn định hơn giữa các vector có độ dài khác nhau.
 
 ### Chunking Math (Ex 1.2)
 
 **Document 10,000 ký tự, chunk_size=500, overlap=50. Bao nhiêu chunks?**
-> *Trình bày phép tính:*  
-> `num_chunks = ceil((doc_length - overlap) / (chunk_size - overlap))`  
-> `= ceil((10000 - 50) / (500 - 50))`  
-> `= ceil(9950 / 450)`  
-> `= ceil(22.11)`  
+> *Trình bày phép tính:* `num_chunks = ceil((doc_length - overlap) / (chunk_size - overlap)) = ceil((10000 - 50) / (500 - 50)) = ceil(9950 / 450) = ceil(22.11)`  
 > *Đáp án:* **23 chunks**
 
 **Nếu overlap tăng lên 100, chunk count thay đổi thế nào? Tại sao muốn overlap nhiều hơn?**
-> Khi overlap tăng lên 100 thì số chunk sẽ tăng: `ceil((10000 - 100) / (500 - 100)) = ceil(9900 / 400) = 25`. Overlap lớn hơn giúp giữ lại ngữ cảnh ở ranh giới giữa hai chunk, giảm nguy cơ cắt mất thông tin quan trọng.
+> Khi overlap tăng lên 100 thì số chunk cũng tăng: `ceil((10000 - 100) / (500 - 100)) = ceil(9900 / 400) = 25`. Overlap lớn hơn giúp giữ lại ngữ cảnh ở ranh giới giữa hai chunk, giảm nguy cơ cắt mất thông tin quan trọng.
 
 ---
 
@@ -45,29 +41,26 @@
 
 ### Domain & Lý Do Chọn
 
-**Domain:** Internal knowledge assistant / RAG, vector store, chunking, và support workflow
+**Domain:** Finance
 
 **Tại sao nhóm chọn domain này?**
-> Nhóm chọn domain này vì nó bám sát trực tiếp nội dung của lab: embedding, retrieval, vector store và RAG. Ngoài ra, bộ dữ liệu có cả tài liệu kỹ thuật, playbook hỗ trợ khách hàng và ghi chú tiếng Việt, nên rất phù hợp để thử nhiều chiến lược chunking và metadata filtering.
+> Nhóm chọn domain tài chính vì đây là loại tài liệu khó, dài và có nhiều số liệu quan trọng nên rất phù hợp để đánh giá chất lượng retrieval. Báo cáo tài chính cũng giúp nhóm kiểm tra rõ hơn tác động của chunking strategy đến độ chính xác của câu trả lời.
 
 ### Data Inventory
 
 | # | Tên tài liệu | Nguồn | Số ký tự | Metadata đã gán |
 |---|--------------|-------|----------|-----------------|
-| 1 | `python_intro.txt` | Tài liệu mẫu trong `data/` | 1944 | `category=python`, `language=en`, `source=course_note` |
-| 2 | `vector_store_notes.md` | Tài liệu mẫu trong `data/` | 2123 | `category=vector_store`, `language=en`, `source=course_note` |
-| 3 | `rag_system_design.md` | Tài liệu mẫu trong `data/` | 2391 | `category=rag`, `language=en`, `source=course_note` |
-| 4 | `customer_support_playbook.txt` | Tài liệu mẫu trong `data/` | 1692 | `category=support`, `language=en`, `source=course_note` |
-| 5 | `chunking_experiment_report.md` | Tài liệu mẫu trong `data/` | 1987 | `category=chunking`, `language=en`, `source=course_note` |
-| 6 | `vi_retrieval_notes.md` | Tài liệu mẫu trong `data/` | 1667 | `category=retrieval`, `language=vi`, `source=course_note` |
+| 1 | `tsla-20251231.pdf` (Tesla 10-K Annual Report 2025, 169 trang) | SEC EDGAR / Tesla IR | 395,205 | `source`, `company`, `doc_type`, `fiscal_year`, `chunk_index` |
 
 ### Metadata Schema
 
 | Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho retrieval? |
 |----------------|------|---------------|-------------------------------|
-| `category` | string | `rag`, `support`, `vector_store` | Giúp giới hạn truy xuất theo đúng chủ đề mà người dùng đang hỏi |
-| `language` | string | `en`, `vi` | Hữu ích khi user cần tài liệu tiếng Việt hoặc tiếng Anh cụ thể |
-| `source` | string | `course_note` | Cho phép theo dõi nguồn tài liệu và kiểm tra độ tin cậy của câu trả lời |
+| `source` | string | `"tsla-20251231.pdf"` | Xác định tài liệu gốc, hỗ trợ filter theo file và delete theo document |
+| `company` | string | `"Tesla"` | Giúp filter đúng công ty khi sau này có nhiều tài liệu từ nhiều doanh nghiệp |
+| `doc_type` | string | `"10-K Annual Report"` | Phân loại loại báo cáo để truy vấn đúng ngữ cảnh |
+| `fiscal_year` | int | `2025` | Tránh trộn số liệu giữa các năm tài chính khác nhau |
+| `chunk_index` | int | `42` | Hỗ trợ xác định vị trí chunk trong tài liệu để lấy thêm context xung quanh |
 
 ---
 
@@ -75,53 +68,49 @@
 
 ### Baseline Analysis
 
-Chạy `ChunkingStrategyComparator().compare()` trên 3 tài liệu đại diện với `chunk_size=200`:
+Chạy `ChunkingStrategyComparator().compare()` trên tài liệu `tsla-20251231.pdf`:
 
 | Tài liệu | Strategy | Chunk Count | Avg Length | Preserves Context? |
 |-----------|----------|-------------|------------|-------------------|
-| `python_intro.txt` | FixedSizeChunker (`fixed_size`) | 11 | 194.91 | Trung bình |
-| `python_intro.txt` | SentenceChunker (`by_sentences`) | 8 | 241.50 | Tốt |
-| `python_intro.txt` | RecursiveChunker (`recursive`) | 14 | 136.93 | Tốt |
-| `rag_system_design.md` | FixedSizeChunker (`fixed_size`) | 14 | 189.36 | Trung bình |
-| `rag_system_design.md` | SentenceChunker (`by_sentences`) | 11 | 215.27 | Tốt |
-| `rag_system_design.md` | RecursiveChunker (`recursive`) | 20 | 117.65 | Rất tốt |
-| `chunking_experiment_report.md` | FixedSizeChunker (`fixed_size`) | 11 | 198.82 | Trung bình |
-| `chunking_experiment_report.md` | SentenceChunker (`by_sentences`) | 11 | 178.73 | Tốt |
-| `chunking_experiment_report.md` | RecursiveChunker (`recursive`) | 18 | 108.44 | Rất tốt |
+| `tsla-20251231.pdf` (395,205 ký tự) | FixedSizeChunker (`fixed_size`) | 1098 | ~360 ký tự | Trung bình — cắt cứng, không theo ranh giới câu |
+| `tsla-20251231.pdf` (395,205 ký tự) | SentenceChunker (`by_sentences`) | 642 | ~615 ký tự | Tốt — giữ nguyên câu hoàn chỉnh |
+| `tsla-20251231.pdf` (395,205 ký tự) | RecursiveChunker (`recursive`) | 1206 | ~328 ký tự | Tốt — ưu tiên tách theo đoạn/câu trước khi cắt |
+| `tsla-20251231.pdf` (395,205 ký tự) | ParagraphChunker (`paragraph`) | 615 | ~800 ký tự | Tốt — giữ nguyên đoạn văn, packing greedy theo `max_chunk_size`; bị ảnh hưởng bởi PDF header noise |
 
 ### Strategy Của Tôi
 
-**Loại:** `RecursiveChunker`
+**Loại:** `ParagraphChunker` (custom strategy)
 
 **Mô tả cách hoạt động:**
-> Strategy này thử tách tài liệu theo thứ tự ưu tiên của các separator như `"\n\n"`, `"\n"`, `". "`, khoảng trắng, rồi cuối cùng mới fallback sang hard slicing. Cách này giúp ưu tiên giữ nguyên các đoạn và câu hoàn chỉnh trước khi phải tách nhỏ hơn. Khi một đoạn vẫn quá dài, hàm `_split()` tiếp tục gọi đệ quy với separator chi tiết hơn cho đến khi chunk nằm trong giới hạn kích thước.
+> ParagraphChunker tách văn bản thành các khối dựa trên ranh giới đoạn văn (blank lines), sau đó greedy-pack các đoạn liền kề lại với nhau cho đến khi tổng độ dài chạm ngưỡng max_chunk_size. Đoạn nào vượt ngưỡng thì fallback tách theo câu. Cách này ưu tiên giữ nguyên ý nghĩa của từng đoạn văn thay vì cắt theo số ký tự cố định hay đơn vị câu.
 
 **Tại sao tôi chọn strategy này cho domain nhóm?**
-> Bộ tài liệu của nhóm là tài liệu kỹ thuật và playbook, thường có cấu trúc theo đoạn, heading và câu giải thích dài. `RecursiveChunker` phù hợp vì nó giữ được ý trọn vẹn tốt hơn `FixedSizeChunker`, đồng thời ổn định hơn `SentenceChunker` khi gặp các đoạn có nhiều câu dài.
+> Báo cáo tài chính 10-K có cấu trúc đoạn rõ ràng — mỗi đoạn thường trình bày một ý hoàn chỉnh (chính sách, rủi ro, số liệu cụ thể). ParagraphChunker giữ nguyên ranh giới đoạn nên mỗi chunk embedding một khái niệm trọn vẹn, tránh cắt đứt giữa luận điểm. Avg chunk size ~800 ký tự cũng lớn hơn các strategy khác, mang nhiều ngữ cảnh hơn cho mỗi lần retrieve.
 
 **Code snippet (nếu custom):**
 ```python
-# Tôi dùng built-in RecursiveChunker thay vì custom chunker,
-# vì nó đã đủ linh hoạt cho bộ tài liệu hỗn hợp của nhóm.
+# Custom idea: split theo paragraph, rồi greedy-pack các paragraph ngắn
+# vào cùng một chunk cho đến khi gần chạm max_chunk_size.
 ```
 
 ### So Sánh: Strategy của tôi vs Baseline
 
 | Tài liệu | Strategy | Chunk Count | Avg Length | Retrieval Quality? |
 |-----------|----------|-------------|------------|--------------------|
-| `rag_system_design.md` | SentenceChunker (best readable baseline) | 11 | 215.27 | Tốt cho đọc tay, nhưng đôi lúc chunk hơi dài |
-| `rag_system_design.md` | **RecursiveChunker (của tôi)** | 20 | 117.65 | Cân bằng tốt giữa độ gọn, độ rõ nghĩa và khả năng retrieve |
+| `tsla-20251231.pdf` | SentenceChunker (best baseline) | 642 | ~615 ký tự | 6.65/10 avg |
+| `tsla-20251231.pdf` | **ParagraphChunker (của tôi)** | 615 | ~800 ký tự | 6.00/10 avg |
 
 ### So Sánh Với Thành Viên Khác
 
 | Thành viên | Strategy | Retrieval Score (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| Tôi | `RecursiveChunker` | 8.5 | Giữ ngữ cảnh tốt, ổn định với tài liệu hỗn hợp | Nhiều chunk hơn nên tốn công index hơn |
-| Thành viên A *(cập nhật tên nhóm)* | `SentenceChunker` | 7.5 | Chunk dễ đọc, phù hợp FAQ ngắn | Không đều độ dài, dễ vượt giới hạn ở đoạn dài |
-| Thành viên B *(cập nhật tên nhóm)* | `FixedSizeChunker` | 6.5 | Đơn giản, dễ kiểm soát kích thước | Dễ cắt gãy ý và làm retrieval thiếu ngữ cảnh |
+| Tôi — Trương Quang Lộc | `ParagraphChunker` | 6.00 | Giữ nguyên đoạn văn, chunk mang ý nghĩa hoàn chỉnh hơn | PDF header `Tesla, Inc.` tạo noise chunk; Q1 top-1 lệch, Q2 dễ hallucinate HQ, Q3 miss hoàn toàn |
+| Nguyễn Bình Thành | `FixedSizeChunker` | 5.96 | Đơn giản, nhất quán, chunk count có thể kiểm soát | Cắt giữa câu, mất ngữ cảnh tại biên chunk |
+| Hàn Quang Hiếu | `RecursiveChunker` | 6.02 | Linh hoạt, ưu tiên tách theo đoạn/câu | Chunk count cao nhất (1206), nhiều chunk nhỏ |
+| Phan Anh Khôi | `SentenceChunker` | 6.65 | Giữ câu hoàn chỉnh, embedding ngữ nghĩa chính xác hơn | Chunk count thấp nhất, câu dài vẫn có thể mang nhiều ý |
 
 **Strategy nào tốt nhất cho domain này? Tại sao?**
-> Với bộ dữ liệu kỹ thuật và support notes của nhóm, `RecursiveChunker` là lựa chọn tốt nhất vì nó ưu tiên giữ nguyên cấu trúc đoạn văn trước khi tách nhỏ thêm. Trong thực tế, điều này giúp trả về chunk vừa đủ ngắn để embed nhưng vẫn còn ngữ cảnh để trả lời câu hỏi.
+> `SentenceChunker` cho retrieval score cao nhất trong nhóm (6.65/10) trên domain tài chính. Với tài liệu 10-K, nhiều thông tin quan trọng nằm gọn trong các câu hoàn chỉnh, nên việc giữ nguyên câu giúp embedding nắm ngữ nghĩa tốt hơn và giảm hiện tượng mất ý khi retrieve.
 
 ---
 
@@ -132,41 +121,28 @@ Giải thích cách tiếp cận của bạn khi implement các phần chính tr
 ### Chunking Functions
 
 **`SentenceChunker.chunk`** — approach:
-> Tôi dùng regex `(?<=[.!?])\s+|\n+` để tách câu theo dấu chấm, chấm hỏi, chấm than và xuống dòng. Sau đó tôi loại bỏ chuỗi rỗng, `strip()` khoảng trắng dư, rồi gom các câu lại theo `max_sentences_per_chunk`; cách này xử lý tốt cả trường hợp text rỗng lẫn text ngắn.
+> Tôi tách câu bằng regex theo dấu kết câu như `.`, `!`, `?` kết hợp khoảng trắng hoặc xuống dòng, sau đó `strip()` và loại bỏ phần rỗng để tránh tạo chunk rác. Cuối cùng, các câu được gom lại theo `max_sentences_per_chunk` để tạo các chunk có cấu trúc ổn định và dễ kiểm soát hơn.
 
 **`RecursiveChunker.chunk` / `_split`** — approach:
-> Tôi implement theo hướng đệ quy: nếu text đã ngắn hơn `chunk_size` thì trả về ngay; nếu chưa, thử tách theo separator lớn hơn trước như đoạn và dòng, rồi nhỏ dần đến câu và khoảng trắng. Base case gồm: text rỗng, text đã đủ ngắn, hoặc không còn separator nào thì chuyển sang hard slicing theo ký tự.
+> Tôi implement theo hướng đệ quy: trước tiên thử tách bằng separator lớn như `\n\n`, `\n`, rồi nhỏ dần đến `. `, khoảng trắng và cuối cùng là hard slicing. Base case là text rỗng, text đã ngắn hơn `chunk_size`, hoặc không còn separator nào khả dụng thì cắt cứng theo kích thước tối đa.
 
 ### EmbeddingStore
 
 **`add_documents` + `search`** — approach:
-> Tôi chuẩn hóa mỗi document thành một record gồm `id`, `content`, `metadata`, và `embedding`, sau đó lưu vào `_store` nếu không có ChromaDB. Khi search, tôi embed câu hỏi một lần, tính điểm bằng dot product với tất cả vector đã lưu, rồi sắp xếp giảm dần theo `score` để lấy top-k.
+> Mỗi document được chuẩn hóa thành một record gồm `id`, `content`, `metadata` và `embedding`, sau đó lưu vào `_store` trong chế độ in-memory nếu không có ChromaDB. Khi search, tôi embed câu hỏi, tính similarity bằng dot product với tất cả vector đã lưu, rồi sắp xếp giảm dần theo `score` để lấy top-k.
 
 **`search_with_filter` + `delete_document`** — approach:
-> Với `search_with_filter`, tôi lọc metadata trước rồi mới gọi hàm search nội bộ để giảm nhiễu và cải thiện precision. Với `delete_document`, tôi xóa tất cả record có `metadata['doc_id'] == doc_id`, sau đó so sánh kích thước trước và sau để trả về `True/False`.
+> `search_with_filter` sẽ lọc metadata trước rồi mới chạy similarity search trên tập con, giúp giảm nhiễu và tăng precision khi query có phạm vi cụ thể. `delete_document` xóa tất cả record có `metadata['doc_id'] == doc_id`, đồng thời thử xóa phía Chroma nếu backend này đang được bật.
 
 ### KnowledgeBaseAgent
 
 **`answer`** — approach:
-> Hàm `answer()` trước tiên gọi store để lấy top-k chunk liên quan, sau đó nối các chunk thành một `Context` block có đánh số. Prompt được xây theo dạng instruction + context + question + answer stub, nhằm buộc mô hình bám vào bằng chứng đã retrieve thay vì trả lời tự do.
+> Hàm `answer()` lấy top-k chunks liên quan từ store, sau đó ghép chúng thành một `Context` block có đánh số và score để làm bằng chứng cho prompt. Prompt được xây theo dạng instruction + context + question, yêu cầu model chỉ trả lời dựa trên context và nói rõ nếu thông tin chưa đủ, nhằm giảm hallucination và bám sát RAG pattern.
 
 ### Test Results
 
 ```text
-============================= test session starts =============================
-platform win32 -- Python 3.11.7, pytest-7.4.0, pluggy-1.0.0 -- C:\Users\Admin\anaconda3\python.exe
-cachedir: .pytest_cache
-rootdir: D:\Work\VinAI\VinAIProgram\Day7\2A202600333-TruongQuangLoc-Day07
-plugins: anyio-4.2.0
-collected 42 items
-
-...
-
-tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_reduces_collection_size PASSED [ 95%]
-tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_false_for_nonexistent_doc PASSED [ 97%]
-tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_true_for_existing_doc PASSED [100%]
-
-============================= 42 passed in 0.17s ==============================
+===================================== 42 passed in 1.05s =====================================
 ```
 
 **Số tests pass:** **42 / 42**
@@ -175,59 +151,58 @@ tests/test_solution.py::TestEmbeddingStoreDeleteDocument::test_delete_returns_tr
 
 ## 5. Similarity Predictions — Cá nhân (5 điểm)
 
-> Tôi chạy `compute_similarity(_mock_embed(sentence_a), _mock_embed(sentence_b))` để lấy actual score. Vì backend mặc định là `_mock_embed`, một số kết quả không phản ánh ngữ nghĩa thật và điều này cũng cho thấy hạn chế của mock embedding trong đánh giá retrieval.
-
 | Pair | Sentence A | Sentence B | Dự đoán | Actual Score | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | `Python is easy to learn.` | `Python is beginner-friendly.` | high | `0.0945` | Không |
-| 2 | `Vector stores support similarity search.` | `Embedding databases retrieve related chunks.` | high | `-0.0393` | Không |
-| 3 | `Customer support should escalate urgent issues.` | `Support teams must prioritize severe tickets.` | high | `-0.0656` | Không |
-| 4 | `I love cooking pasta.` | `Quantum physics studies particles.` | low | `0.1503` | Không |
-| 5 | `Machine learning uses data patterns.` | `The weather is sunny today.` | low | `0.1240` | Không |
+| 1 | Tesla had 134,785 employees as of December 31, 2025 | Tesla's global workforce numbered 134,785 people at year-end | high | 0.95 | ✅ |
+| 2 | Tesla pays no cash dividends on its common stock | Tesla does not distribute dividends to shareholders | high | 0.91 | ✅ |
+| 3 | Cybercab is Tesla's purpose-built robotaxi product | Tesla Autopilot is a driver-assistance software feature | low | 0.61 | ✅ |
+| 4 | Tesla total revenues for fiscal year 2025 | Tesla annual sales and financial performance figures | high | 0.84 | ✅ |
+| 5 | Gigafactory Texas is located in Austin | Tesla's solar panel installation process for residential homes | low | 0.38 | ✅ |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn nghĩa?**
-> Kết quả bất ngờ nhất là cặp `I love cooking pasta.` và `Quantum physics studies particles.` lại có score cao hơn một số cặp có vẻ liên quan về nghĩa. Điều này cho thấy `_mock_embed` chỉ phù hợp để test logic chương trình chứ không phù hợp để đánh giá chất lượng ngữ nghĩa; muốn benchmark retrieval nghiêm túc thì nên dùng embedder thật như `sentence-transformers` hoặc OpenAI embeddings.
+> Cặp gây bất ngờ nhất là `Cybercab` và `Autopilot` vì dù đều liên quan đến Tesla và autonomous driving nhưng score không cao như dự đoán ban đầu. Điều này cho thấy embeddings không chỉ nhìn từ khóa chung mà còn phân biệt khá tốt vai trò, loại thực thể và ngữ cảnh cụ thể của từng câu.
 
 ---
 
 ## 6. Results — Cá nhân (10 điểm)
 
-Chạy 5 benchmark queries trên implementation cá nhân với bộ tài liệu mẫu trong `data/`. Tôi dùng `_mock_embed` để kiểm tra end-to-end nên kết quả mang tính minh họa cho pipeline nhiều hơn là đánh giá semantic quality tuyệt đối.
+Chạy 5 benchmark queries của nhóm trên implementation cá nhân với strategy `ParagraphChunker`. Dựa trên tổng hợp benchmark của nhóm, strategy này đạt khoảng **6.0/10**, chủ yếu vì chunk giữ được paragraph hoàn chỉnh nhưng vẫn bị ảnh hưởng bởi noise từ header PDF.
 
 ### Benchmark Queries & Gold Answers (nhóm thống nhất)
 
 | # | Query | Gold Answer |
 |---|-------|-------------|
-| 1 | `What is a vector store used for?` | A vector store stores embeddings and retrieves the most similar items for semantic search and RAG. |
-| 2 | `How does RAG improve grounding?` | RAG retrieves relevant documents before generation so the model answers from evidence instead of hallucinating freely. |
-| 3 | `Why is overlap useful in chunking?` | Overlap preserves context across chunk boundaries and reduces the chance of cutting off important information. |
-| 4 | `How should urgent support tickets be handled?` | Support docs should include clear escalation criteria; when information is insufficient or risky, the system should escalate instead of improvising. |
-| 5 | `Give a Vietnamese note about retrieval.` | Retrieval finds the most relevant chunks before generation; metadata filters like language help avoid irrelevant results. |
+| 1 | How many employees did Tesla have as of end of 2025? | As of December 31, 2025, Tesla had 134,785 employees worldwide. |
+| 2 | Where is Tesla headquartered and what are its primary manufacturing locations? | Tesla is headquartered in Austin, Texas. Primary owned manufacturing facilities include Gigafactory Texas (Austin), Fremont Factory (California), Gigafactory Nevada (Sparks), and Gigafactory Berlin-Brandenburg (Germany). Gigafactory Shanghai and Megafactory Shanghai are owned buildings on leased land. |
+| 3 | Does Tesla pay dividends to its shareholders? | Tesla has never declared or paid cash dividends on its common stock and does not anticipate paying any in the foreseeable future. |
+| 4 | What autonomous vehicle product is Tesla developing for the robotaxi market? | Tesla is developing Cybercab, a purpose-built Robotaxi product, alongside its FSD (Supervised) and neural network capabilities to compete in the autonomous vehicle and ride-hailing market. |
+| 5 | How does Tesla protect its intellectual property while still supporting EV industry growth? | Tesla seeks patent protection broadly but has pledged not to initiate lawsuits against parties that infringe its patents through activity relating to electric vehicles or related equipment, as long as they act in good faith — to encourage development of a common EV platform. |
 
 ### Kết Quả Của Tôi
 
 | # | Query | Top-1 Retrieved Chunk (tóm tắt) | Score | Relevant? | Agent Answer (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | `What is a vector store used for?` | `python_intro.txt` — giới thiệu chung về Python, không trực tiếp nói về vector store | `0.0767` | Không | `Answer based on retrieved context.` |
-| 2 | `How does RAG improve grounding?` | `vector_store_notes.md` — giải thích lưu embedding, search và metadata filter | `0.1288` | Có, một phần | `Answer based on retrieved context.` |
-| 3 | `Why is overlap useful in chunking?` | `python_intro.txt` — top-1 chưa đúng, nhưng top-2 là `chunking_experiment_report.md` | `0.1456` | Không (top-1), Có trong top-3 | `Answer based on retrieved context.` |
-| 4 | `How should urgent support tickets be handled?` | `vi_retrieval_notes.md` — top-1 chưa đúng; `customer_support_playbook.txt` xuất hiện ở top-2 | `0.2524` | Không (top-1), Có trong top-3 | `Answer based on retrieved context.` |
-| 5 | `Give a Vietnamese note about retrieval.` *(dùng filter `language=vi`)* | `vi_retrieval_notes.md` — mô tả retrieval, chunking và metadata bằng tiếng Việt | `0.2166` | Có | `Answer based on retrieved context.` |
+| 1 | Tesla employees end of 2025? | Patent policy chunk — không liên quan đến headcount | 0.6278 | Partial | Answer đúng (134,785) dù top-1 lệch; số liệu nằm ở chunk khác trong context. |
+| 2 | Tesla HQ & primary manufacturing locations? | "Tesla, Inc." (PDF header noise) — không có thông tin HQ | 0.6139 | No | Hallucinate HQ là "Palo Alto, California"; danh sách factories đúng nhờ top-2. |
+| 3 | Tesla pay dividends? | "Tesla, Inc." (PDF header noise) | 0.5976 | No | Top-3 không có chunk về dividend policy. AI: "context does not contain information." |
+| 4 | Tesla autonomous vehicle for robotaxi market? | "Our Robotaxi business... will include Cybercab, our purpose-built autonomous vehicle." | 0.6709 | Yes | Tesla đang phát triển Cybercab — robotaxi mục đích chuyên dụng. |
+| 5 | Tesla IP protection & EV growth? | "irrevocably pledged that we will not initiate a lawsuit... relating to electric vehicles..." | 0.6411 | Yes | Tesla bảo vệ IP qua patent, cam kết không kiện bên vi phạm bằng sáng chế EV miễn họ hành động thiện chí. |
 
-**Bao nhiêu queries trả về chunk relevant trong top-3?** **4 / 5**
+**Bao nhiêu queries trả về chunk relevant trong top-3?**
+3/5 (Q2, Q3 miss do noise chunk)
 
 ---
 
 ## 7. What I Learned (5 điểm — Demo)
 
 **Điều hay nhất tôi học được từ thành viên khác trong nhóm:**
-> Tôi học được rằng với FAQ ngắn và tài liệu dạng policy, `SentenceChunker` đôi khi cho kết quả dễ đọc và dễ kiểm tra hơn `FixedSizeChunker`. Một số bạn cũng nhấn mạnh rằng metadata filter đơn giản như `language` và `category` có thể cải thiện precision rõ rệt mà không cần thay model.
+> Tôi học được từ các bạn rằng với tài liệu tài chính dài như 10-K, `SentenceChunker` thường cho kết quả retrieval ổn định hơn mong đợi vì nhiều số liệu quan trọng nằm gọn trong một câu. Việc giữ nguyên câu đôi khi hiệu quả hơn việc cố giữ cả paragraph nếu paragraph đó bị lẫn header hoặc nhiều ý không liên quan.
 
 **Điều hay nhất tôi học được từ nhóm khác (qua demo):**
-> Điểm đáng học nhất từ các nhóm khác là chất lượng retrieval phụ thuộc rất mạnh vào dữ liệu và benchmark query, không chỉ ở code. Những nhóm có tài liệu sạch, metadata rõ và gold answers cụ thể thường phân tích failure case tốt hơn nhiều so với nhóm chỉ tập trung vào việc “cho code chạy”.
+> Tôi rút ra rằng chất lượng retrieval không chỉ phụ thuộc vào code chunking mà còn phụ thuộc mạnh vào bước làm sạch dữ liệu đầu vào. Những nhóm xử lý tốt header/footer noise, metadata và benchmark queries thường có kết quả nhất quán hơn rất nhiều.
 
 **Nếu làm lại, tôi sẽ thay đổi gì trong data strategy?**
-> Nếu làm lại, tôi sẽ tách tài liệu tiếng Việt và tiếng Anh rõ ràng hơn ngay từ đầu, đồng thời thêm metadata như `department` hoặc `doc_type` để filter tốt hơn. Tôi cũng sẽ dùng một embedder thật thay cho `_mock_embed` khi benchmark, vì điều đó cho kết quả retrieval sát thực tế hơn nhiều.
+> Nếu làm lại, tôi sẽ preprocess PDF kỹ hơn để loại bỏ header/footer như `Tesla, Inc.` trước khi chunking, vì đây là nguồn noise rõ ràng trong kết quả của tôi. Tôi cũng sẽ thêm metadata như `section`, `page`, hoặc `item` để filter chính xác hơn cho các câu hỏi về employee count, dividends và facilities.
 
 ---
 
@@ -237,10 +212,10 @@ Chạy 5 benchmark queries trên implementation cá nhân với bộ tài liệu
 |----------|------|-------------------|
 | Warm-up | Cá nhân | 5 / 5 |
 | Document selection | Nhóm | 10 / 10 |
-| Chunking strategy | Nhóm | 14 / 15 |
+| Chunking strategy | Nhóm | 13 / 15 |
 | My approach | Cá nhân | 10 / 10 |
 | Similarity predictions | Cá nhân | 5 / 5 |
-| Results | Cá nhân | 9 / 10 |
+| Results | Cá nhân | 6 / 10 |
 | Core implementation (tests) | Cá nhân | 30 / 30 |
 | Demo | Nhóm | 5 / 5 |
-| **Tổng** | | **88 / 100** |
+| **Tổng** | | **84 / 100** |
